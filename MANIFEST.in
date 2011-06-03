@@ -1,0 +1,4 @@
+include setup.py README MANIFEST.in LICENSE
+recursive-include nexus_redis/templates *
+recursive-include nexus_redis/media *
+global-exclude *~

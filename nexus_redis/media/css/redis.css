@@ -1,0 +1,54 @@
+.server-list {
+    margin-left: 0;
+    list-style: none;
+    text-align: center;
+}
+.server {
+    display: inline-block;
+    text-align: left;
+    width: 48%;
+    margin: 0 3px;
+    position: relative;
+    margin-bottom: 20px;
+    padding: 5px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    border-top: 1px solid #eee;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+.server h2 {
+    margin-bottom: 5px;
+    font-size: 1.3em;
+}
+.server .more {
+    margin-top: 10px;
+    display: none;
+}
+.server .more caption {
+    background: #eee;
+}
+.server td,
+.server th {
+    padding: 3px;
+    border-bottom: 1px solid #eee;
+}
+.server th {
+    text-align: right;
+}
+.server tr:last-child td,
+.server tr:last-child th {
+    border-bottom: 0;
+}
+.server table {
+    border-collapse: collapse;
+    margin: 0 0 5px;
+}
+
+.server .button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
