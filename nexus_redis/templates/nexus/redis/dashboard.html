@@ -1,9 +1,5 @@
 {% load redis_helpers %}
 {% if global_stats.total %}
-    <div class="capacity-graph">
-        <div style="width: {% widthratio global_stats.bytes global_stats.limit_maxbytes 100 %}%"></div>
-        <strong>{% widthratio global_stats.bytes global_stats.limit_maxbytes 100 %}% load</strong>
-    </div>
     <table>
         <colgroup>
             <col width="30%"/>
@@ -15,25 +11,11 @@
             </tr>
             <tr>
                 <th>Connections:</th>
-                <td>{{ global_stats.curr_connections|int|intcomma }}</td>
+                <td>{{ global_stats.connected_clients|int|intcomma }}</td>
             </tr>
             <tr>
                 <th>Usage:</th>
-                <td>{{ global_stats.bytes|humanize_bytes }} / {{ global_stats.limit_maxbytes|humanize_bytes }} ({{ global_stats.rusage_system|humanize_bytes }} system)</td>
-            </tr>
-            <tr>
-                <th>Items:</th>
-                <td>{{ global_stats.curr_items|int|intcomma }}</td>
-            </tr>
-            <tr>
-                <th>Hit Ratio:</th>
-                <td>
-                    {% if global_stats.cmd_get %}
-                        {% widthratio global_stats.get_hits global_stats.cmd_get 100 %}%
-                    {% else %}
-                        <em>n/a</em>
-                    {% endif %}
-                </td>
+                <td>{{ global_stats.used_memory|humanize_bytes }}</td>
             </tr>
         </tbody>
     </table>
