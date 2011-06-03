@@ -9,6 +9,10 @@
 {% load redis_helpers %}
 
 {% block content %}
+    <ul class="tabs">
+        <li class="active"><a href="{% url redis:index %}">All Connections</a></li>
+        <li><a href="{% url redis:by-server %}">Physical Hosts</a></li>
+    </ul>
     <p>Displaying statistics for {{ cache_stats|length }} Redis server{{ cache_stats|length|pluralize }}</p>
     {% for group, hosts in cache_stats.iteritems %}
         <h2>{{ group|title }}</h2>

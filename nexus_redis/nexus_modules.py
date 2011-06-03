@@ -48,6 +48,7 @@ class RedisModule(nexus.NexusModule):
 
         urlpatterns = patterns('',
             url(r'^$', self.as_view(self.index), name='index'),
+            url(r'^by-server/$', self.as_view(self.by_server), name='by-server'),
         )
         
         return urlpatterns
@@ -62,15 +63,14 @@ class RedisModule(nexus.NexusModule):
             'connected_clients': 0,
             'connected_slaves': 0,
             'online': 0,
+            'total': 0
         }
 
-        servers = 0
         for group in cache_stats.itervalues():
             for host, stats in group:
                 for k in global_stats.iterkeys():
                     global_stats[k] += float(stats.get(k, 0))
-                    servers += 1
-        global_stats['total'] = servers
+                global_stats['total'] += 1
 
         return self.render_to_string('nexus/redis/dashboard.html', {
             'global_stats': global_stats,
@@ -80,4 +80,31 @@ class RedisModule(nexus.NexusModule):
         return self.render_to_response("nexus/redis/index.html", {
             'cache_stats': self.get_stats(),
         }, request)
+
+    def by_server(self, request):
+        global_stats = {
+            'expired_keys': 0,
+            'total_commands_processed': 0,
+            'used_memory': 0,
+            'connected_clients': 0,
+            'connected_slaves': 0,
+            'online': 0,
+            'total': 0,
+        }
+        server_stats = {}
+        for group in self.get_stats().itervalues():
+            for host, stats in group:
+                hostname = host['host']
+                if hostname not in server_stats:
+                    server_stats[hostname] = global_stats.copy()
+                
+                for k in global_stats.iterkeys():
+                    server_stats[hostname][k] += float(stats.get(k, 0))
+                server_stats[hostname]['total'] += 1
+                server_stats[hostname].setdefault('servers', []).append((host, stats))
+
+        return self.render_to_response("nexus/redis/by_server.html", {
+            'cache_stats': server_stats,
+        }, request)
+
 nexus.site.register(RedisModule, 'redis', category='cache')

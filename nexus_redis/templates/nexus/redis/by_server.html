@@ -1,0 +1,59 @@
+{% extends "nexus/module.html" %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{ nexus_media_prefix }}/redis/css/redis.css">
+    <script src="{{ nexus_media_prefix }}/redis/js/redis.js"></script>
+{% endblock %}
+
+{% load redis_helpers %}
+
+{% block content %}
+    <ul class="tabs">
+        <li><a href="{% url redis:index %}">All Connections</a></li>
+        <li class="active"><a href="{% url redis:by-server %}">Physical Hosts</a></li>
+    </ul>
+    <p>Displaying statistics for {{ cache_stats|length }} physical host{{ cache_stats|length|pluralize }}</p>
+    <ul class="server-list">
+        {% for hostname, stats in cache_stats.iteritems %}
+            <li class="server server-{% if stats.online %}online{% else %}offline{% endif %}" id="{{ forloop.index }}">
+                <h3>{{ hostname }}</h3>
+                {% if stats.online %}
+                    <button class="button small toggle">Expand</button>
+                {% endif %}
+                <table>
+                    <colgroup>
+                        <col width="30%"/>
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <th>Status:</th>
+                            <td>{% widthratio stats.online stats.total 100 %}% online ({{ stats.online|int }} / {{ stats.total|int }})</td>
+                        </tr>
+                        <tr>
+                            <th>Connections:</th>
+                            <td>{{ stats.connected_clients|int|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <th>Usage:</th>
+                            <td>{{ stats.used_memory|humanize_bytes }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% if stats.online %}
+                    <div class="more">
+                        <table>
+                            <caption>Detailed Statistics</caption>
+                            {% for host, stats in stats.servers %}
+                                <tr>
+                                    <td>{{ host.host }}:{{ host.port }} (db {{ host.db }})</td>
+                                    <td>{% if host.online %}Online{% else %}Offline{% endif %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
