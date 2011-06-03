@@ -8,7 +8,7 @@ Install
 
 Install using pip, or easy_install::
 
-	pip install nexus_redis
+	pip install nexus-redis
 
 Config
 ======
