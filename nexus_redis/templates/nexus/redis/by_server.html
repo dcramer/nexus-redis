@@ -46,8 +46,8 @@
                             <caption>Detailed Statistics</caption>
                             {% for host, stats in stats.servers %}
                                 <tr>
-                                    <td>{{ host.host }}:{{ host.port }} (db {{ host.db }})</td>
-                                    <td>{% if host.online %}Online{% else %}Offline{% endif %}
+                                    <td>{{ host.host }}{% if host.port %}:{{ host.port }}{% endif %}{% if host.db %} (db {{ host.db }}){% endif %}</td>
+                                    <td>{% if stats.online %}Online{% else %}Offline{% endif %}
                                 </tr>
                             {% endfor %}
                         </table>

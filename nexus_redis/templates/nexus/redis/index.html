@@ -19,7 +19,7 @@
         <ul class="server-list">
             {% for server, stats in hosts %}
                 <li class="server server-{% if stats.online %}online{% else %}offline{% endif %}" id="{{ forloop.index }}">
-                    <h3>{{ server.host }}:{{ server.port }} (db {{ server.db }})</h3>
+                    <h3>{{ server.host }}{% if server.port %}:{{ server.port }}{% endif %}{% if server.db %} (db {{ server.db }}){% endif %}</h3>
                     {% if stats.online %}
                         <button class="button small toggle">Expand</button>
                     {% endif %}
