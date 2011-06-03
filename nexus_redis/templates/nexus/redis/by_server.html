@@ -43,13 +43,18 @@
                 {% if stats.online %}
                     <div class="more">
                         <table>
+                            <colgroup>
+                                <col width="60%"/>
+                            </colgroup>
                             <caption>Detailed Statistics</caption>
-                            {% for host, online in stats.servers %}
-                                <tr>
-                                    <td>{{ host }}</td>
-                                    <td>{% if online %}Online{% else %}Offline{% endif %}
-                                </tr>
-                            {% endfor %}
+                            <tbody>
+                                {% for host, online in stats.servers %}
+                                    <tr>
+                                        <th>{{ host }}</th>
+                                        <td>{% if online %}Online{% else %}Offline{% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
                         </table>
                     </div>
                 {% endif %}
