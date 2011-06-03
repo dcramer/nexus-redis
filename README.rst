@@ -24,3 +24,11 @@ Usage
 =====
 
 The Redis module is automatically integrated into Nexus and provides statistics for all connections specificed in ``NEXUS_REDIS_CONNECTIONS``.
+
+::
+
+    NEXUS_REDIS_CONNECTIONS = getattr(settings, 'NEXUS_REDIS_CONNECTIONS', {
+        'group': [
+            {'host': '127.0.0.1', 'port': 8930, 'db': 0},
+        ],
+    })
