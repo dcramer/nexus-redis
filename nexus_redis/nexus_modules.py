@@ -53,6 +53,12 @@ class RedisModule(nexus.NexusModule):
         
         return urlpatterns
     
+    def get_host_string(self, config):
+        host = config.get('host', 'localhost')
+        port = config.get('port', 6379)
+        db = config.get('db', 0)
+        return '%s:%s (db %s)' % (host, port, db)
+    
     def render_on_dashboard(self, request):
         cache_stats = self.get_stats()
          
@@ -94,14 +100,22 @@ class RedisModule(nexus.NexusModule):
         server_stats = {}
         for group in self.get_stats().itervalues():
             for host, stats in group:
-                hostname = host['host']
+                hostname = host.get('host', 'localhost')
                 if hostname not in server_stats:
                     server_stats[hostname] = global_stats.copy()
+                    server_stats[hostname]['servers'] = set()
+
+                host_sig = (self.get_host_string(host), stats['online'])
+                
+                if host_sig in server_stats[hostname]['servers']:
+                    continue
                 
                 for k in global_stats.iterkeys():
                     server_stats[hostname][k] += float(stats.get(k, 0))
-                server_stats[hostname]['total'] += 1
-                server_stats[hostname].setdefault('servers', []).append((host, stats))
+
+                server_stats[hostname]['servers'].add(host_sig)
+
+            server_stats[hostname]['total'] = len(server_stats[hostname]['servers'])
 
         return self.render_to_response("nexus/redis/by_server.html", {
             'cache_stats': server_stats,

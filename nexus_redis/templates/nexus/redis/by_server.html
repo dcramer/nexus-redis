@@ -44,10 +44,10 @@
                     <div class="more">
                         <table>
                             <caption>Detailed Statistics</caption>
-                            {% for host, stats in stats.servers %}
+                            {% for host, online in stats.servers %}
                                 <tr>
                                     <td>{{ host.host }}{% if host.port %}:{{ host.port }}{% endif %}{% if host.db %} (db {{ host.db }}){% endif %}</td>
-                                    <td>{% if stats.online %}Online{% else %}Offline{% endif %}
+                                    <td>{% if online %}Online{% else %}Offline{% endif %}
                                 </tr>
                             {% endfor %}
                         </table>
