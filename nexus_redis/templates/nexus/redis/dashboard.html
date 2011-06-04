@@ -7,7 +7,7 @@
         <tbody>
             <tr>
                 <th>Status:</th>
-                <td>{% widthratio global_stats.online global_stats.total 100 %}% online ({{ global_stats.online|int }} / {{ global_stats.total }})</td>
+                <td>{% widthratio global_stats.online global_stats.total 100 %}% online ({{ global_stats.online|int }} / {{ global_stats.total|int }})</td>
             </tr>
             <tr>
                 <th>Connections:</th>
@@ -16,6 +16,16 @@
             <tr>
                 <th>Usage:</th>
                 <td>{{ global_stats.used_memory|humanize_bytes }}</td>
+            </tr>
+            <tr>
+                <th>Hit Ratio:</th>
+                <td>
+                    {% if global_stats.keyspace_commands %}
+                        {% widthratio global_stats.keyspace_hits global_stats.keyspace_commands 100 %}%
+                    {% else %}
+                        <em>n/a</em>
+                    {% endif %}
+                </td>
             </tr>
         </tbody>
     </table>

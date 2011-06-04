@@ -4,6 +4,7 @@ from redis import Redis
 import nexus
 
 from nexus_redis import conf
+from nexus_redis.helpers import get_net_loc
 
 class RedisModule(nexus.NexusModule):
     home_url = 'index'
@@ -11,13 +12,14 @@ class RedisModule(nexus.NexusModule):
     
     def get_caches(self):
         caches = {}
-        for group, hosts in conf.CONNECTIONS.iteritems():
-            caches[group] = []
-            for host in hosts:
-                try:
-                    caches[group].append((host, Redis(**host)))
-                except Exception, e:
-                    self.logger.exception(e)
+        for config in conf.CONNECTIONS:
+            netloc = get_net_loc(config)
+            if netloc in caches:
+                continue
+            try:
+                caches[netloc] = Redis(host=config.get('host'), port=config.get('port'))
+            except Exception, e:
+                self.logger.exception(e)
         return caches
     
     def get_stats(self, timeout=5):
@@ -25,16 +27,14 @@ class RedisModule(nexus.NexusModule):
         socket.setdefaulttimeout(timeout)
 
         results = {}
-        for group, hosts in self.get_caches().iteritems():
-            results[group] = []
-            for host, conn in hosts:
-                try:
-                    stats = conn.info()
-                except Exception, e:
-                    stats = {'online': 0}
-                else:
-                    stats['online'] = 1
-                results[group].append((host, stats))
+        for netloc, conn in self.get_caches().iteritems():
+            try:
+                stats = conn.info()
+            except Exception, e:
+                stats = {'online': 0}
+            else:
+                stats['online'] = 1
+            results[netloc] = stats
 
         socket.setdefaulttimeout(default_timeout)
 
@@ -53,12 +53,6 @@ class RedisModule(nexus.NexusModule):
         
         return urlpatterns
     
-    def get_host_string(self, config):
-        host = config.get('host', 'localhost')
-        port = config.get('port', 6379)
-        db = config.get('db', 0)
-        return '%s:%s (db %s)' % (host, port, db)
-    
     def render_on_dashboard(self, request):
         cache_stats = self.get_stats()
          
@@ -69,14 +63,16 @@ class RedisModule(nexus.NexusModule):
             'connected_clients': 0,
             'connected_slaves': 0,
             'online': 0,
+            'keyspace_misses': 0,
+            'keyspace_hits': 0,
             'total': 0
         }
 
-        for group in cache_stats.itervalues():
-            for host, stats in group:
-                for k in global_stats.iterkeys():
-                    global_stats[k] += float(stats.get(k, 0))
-                global_stats['total'] += 1
+        for netloc, stats in cache_stats.iteritems():
+            for k in global_stats.iterkeys():
+                global_stats[k] += float(stats.get(k, 0))
+            global_stats['keyspace_commands'] = global_stats['keyspace_hits'] + global_stats['keyspace_misses']
+            global_stats['total'] += 1
 
         return self.render_to_string('nexus/redis/dashboard.html', {
             'global_stats': global_stats,
@@ -94,26 +90,28 @@ class RedisModule(nexus.NexusModule):
             'used_memory': 0,
             'connected_clients': 0,
             'connected_slaves': 0,
+            'keyspace_misses': 0,
+            'keyspace_hits': 0,
             'online': 0,
             'total': 0,
         }
         server_stats = {}
-        for group in self.get_stats().itervalues():
-            for host, stats in group:
-                hostname = host.get('host', 'localhost')
-                if hostname not in server_stats:
-                    server_stats[hostname] = global_stats.copy()
-                    server_stats[hostname]['servers'] = set()
+        for netloc, stats in self.get_stats().iteritems():
+            hostname = netloc.split(':', 1)[0]
+            if hostname not in server_stats:
+                server_stats[hostname] = global_stats.copy()
+                server_stats[hostname]['servers'] = set()
+                server_stats[hostname]['keyspace_commands'] = server_stats[hostname]['keyspace_hits'] + server_stats[hostname]['keyspace_misses']
 
-                host_sig = (self.get_host_string(host), stats['online'])
-                
-                if host_sig in server_stats[hostname]['servers']:
-                    continue
-                
-                for k in global_stats.iterkeys():
-                    server_stats[hostname][k] += float(stats.get(k, 0))
+            host_info = (netloc, stats['online'])
+            
+            if host_info in server_stats[hostname]['servers']:
+                continue
+            
+            for k in global_stats.iterkeys():
+                server_stats[hostname][k] += float(stats.get(k, 0))
 
-                server_stats[hostname]['servers'].add(host_sig)
+            server_stats[hostname]['servers'].add(host_info)
 
             server_stats[hostname]['total'] = len(server_stats[hostname]['servers'])
 
