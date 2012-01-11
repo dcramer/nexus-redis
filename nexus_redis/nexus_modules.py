@@ -39,6 +39,7 @@ class RedisModule(nexus.NexusModule):
                 stats = {'online': 0}
             else:
                 stats['online'] = 1
+                stats['db_size'] = conn.dbsize()
             results[netloc] = stats
 
         socket.setdefaulttimeout(default_timeout)
