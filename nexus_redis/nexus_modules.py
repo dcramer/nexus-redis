@@ -17,7 +17,12 @@ class RedisModule(nexus.NexusModule):
             if netloc in caches:
                 continue
             try:
-                caches[netloc] = Redis(host=config.get('host'), port=config.get('port'))
+                caches[netloc] = Redis(
+                    host=config.get('host'),
+                    port=config.get('port'),
+                    password=config.get('password'),
+                    db=config.get('db'),
+                    )
             except Exception, e:
                 self.logger.exception(e)
         return caches
@@ -34,6 +39,7 @@ class RedisModule(nexus.NexusModule):
                 stats = {'online': 0}
             else:
                 stats['online'] = 1
+                stats['db_size'] = conn.dbsize()
             results[netloc] = stats
 
         socket.setdefaulttimeout(default_timeout)
